@@ -70,7 +70,7 @@ python evaluate.py
 | Level 1   | 0.956      | 0.829                | 0.732    |
 | Level 2   | 0.929      | 0.721                | 0.593    |
 
-You can download the best model checkpoint from [Google Drive](https://drive.google.com/file/d/1Bo2IQ5gkCfM9fzLZFOaNjoZlD6nPuX6u/view?usp=sharing) and use it for further evaluation or inference.
+You can download the best model checkpoint from [Google Drive](https://drive.google.com/file/d/1Bo2IQ5gkCfM9fzLZFOaNjoZlD6nPuX6u/view?usp=sharing) and use it for further evaluation or inference. This model was trained on a Windows system with an NVIDIA RTX 4070 Ti GPU, providing optimal training performance.
 
 ## Interactive Visualization
 To run the web app and visualize segmentation results, use the `app.py` script. This allows users to upload images and see segmented outputs for each hierarchical level.
