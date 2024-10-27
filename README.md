@@ -10,8 +10,8 @@ This project implements a hierarchical semantic segmentation pipeline using a cu
   - [Evaluation](#evaluation)
   - [Interactive Visualization](#interactive-visualization)
 - [Project Structure](#project-structure)
+- [Dataset Exploration](#dataset-exploration)
 - [Human Body Class Hierarchy](#human-body-class-hierarchy)
-- [Example Results](#example-results)
 
 ## Overview
 
@@ -86,7 +86,59 @@ streamlit run app.py --server.port 8501
 http://localhost:8501
 ```
 
+**Example of Web App Segmentation Output:** Below is an example of the web app in action, showing the original image and the corresponding segmentation results at different hierarchical levels.
+
+![Web App Example](docs/fig_web_app_1.png)
+
 **Features:**
 - Upload an image and get segmented outputs for different levels.
 - View color-coded segmentation maps with a legend.
 - Compare results easily across different hierarchical levels.
+
+## Project Structure
+```bash
+segmentation-project/
+│
+├── configs/                     # Configuration files for training/evaluation
+│   └── baseline_heavy.yml
+│
+├── models/
+│   └── hierarchical_deeplabv3.py  # Model architecture
+│
+├── utils/
+│   ├── data_utils.py            # Data preprocessing and utilities
+│   ├── dataset.py               # Dataset initialization
+│   ├── lr_scheduler.py          # Learning rate scheduler
+│   ├── metrics.py               # Evaluation metrics
+│   ├── saver.py                 # Model checkpointing
+│   ├── tensorboard_summary.py   # Tensorboard utilities
+│
+├── train.py                     # Script for training the model
+├── evaluate.py                  # Script for evaluating the model
+├── app.py                       # Streamlit app for visualizing segmentation
+├── requirements.txt             # List of project dependencies
+└── README.md                    # Project README
+```
+## Dataset Exploration
+
+The dataset for this project consists of training and validation splits, with the following sizes:
+- **Training Set**: 2,826 images
+- **Validation Set**: 707 images
+
+## Human Body Class Hierarchy
+The model segments the human body at different levels of detail using a hierarchical structure. Below is the hierarchy used:
+- Level 0 (General):
+  - (0) Background
+  - (1) Body
+- Level 1 (Upper/Lower Body):
+  - (0) Background
+  - (1) Upper Body
+  - (2) Lower Body
+- Level 2 (Detailed Parts):
+  - (0) Background
+  - (1) Low Hand
+  - (2) Torso
+  - (3) Low Leg
+  - (4) Head
+  - (5) Up Leg
+  - (6) Up Hand
