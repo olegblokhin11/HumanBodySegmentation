@@ -1,48 +1,74 @@
+# Dataset Configuration
 dataset:
     dataset_path: "data"
     dataset_name: "pascal-part"   
+
+# Image Preprocessing Configuration
 image:
+    scale_factor:
+        min_coef: 0.5
+        max_coef: 2.0
     base_size: 512
     crop_size: 512
+
+    brightness: 0.3
+    contrast: 0.3
+    saturation: 0.3
+    hue: 0.1
+    rot_degrees: 15
+
+# Network Architecture Configuration
 network:
-    backbone: "resnet50"  #choices=['resnet50', 'resnet101', 'mobilenet']
-    num_mask_levels: 3
-    num_classes_level_0: 2
-    num_classes_level_1: 3
-    num_classes_level_2: 7
+    backbone: "resnet50"  # choices: ['resnet50', 'resnet101', 'mobilenet']
+
+# Training Hyperparameters
 training:
     workers: 8
-    loss_type: "ce"   #choices=['ce', 'focal']
-    epochs: 100
+    # loss_type: "ce"  # choices: ['ce', 'focal']
+    epochs: 200
     start_epoch: 0
     batch_size: 4
-    lr: 0.0005
-    lr_scheduler: "poly"     #choices=['poly', 'step', 'cos']
-    lr_step: 0
-    warmup_epochs: 0
+    lr: 1.0e-3
     momentum: 0.9
     weight_decay: 0.0005
-    callbacks:
-    weights_initialization: 
-        # use_pretrained_weights: true
-        # restore_from: "./experiments/checkpoint_last.pth.tar"
-    model_best_checkpoint: 
-        enabled: true
-        out_file: "./experiments/checkpoint_best.pth.tar"
-        monitor: "val_loss"
-    model_last_checkpoint: 
-        enabled: true
-        out_file: "./experiments/checkpoint_last.pth.tar"        
-    output:
-        output_weights: "./snapshots/checkpoint_best.pth.tar"
-    tensorboard: 
-        enabled: true
+
+    # Learning Rate Scheduler
+    lr_scheduler:
+        mode: "cos"  # choices: ['poly', 'step', 'cos', 'cyclic']
+
+        use_warmup: true
+        warmup_epochs: 5
+
+        # Step LR specific
+        step_size: 20 # num epochs before lr reducing
+        gamma: 0.5
+
+        # Cosine Annealing specific
+        ep_max: 100  # max epochs until constant lr
+        eta_min: 1.0e-6 # minimum learning rate
+
+        # Polynomial Decay specific
+        power: 0.9
+
+        # Cyclic LR specific
+        base_lr: 1.0e-6   # Minimum learning rate
+        max_lr: 1.0e-3   # Maximum learning rate
+        step_size_up: 10  # Epochs to reach max_lr
+        cyclic_mode: "triangular"  # Options: 'triangular', 'triangular2', 'exp_range'
+    
+    # Checkpoints Configuration
+    checkpoint_dir: "./checkpoints"
+    
+    # TensorBoard Configuration
+    tensorboard:
         log_dir: "./tensorboard/"
-    # no_val: false
-    val_interval: 1
+
+    # Initialization
+    val_interval: 1  # How often to run validation (e.g., every epoch)
+    # weights_initialization: 
+    #     use_pretrained_weights: true
+    #     restore_from: ""  # Path to checkpoint file if resuming training
+
+# Inference Configuration
 inference:
     batch_size: 4
-#gpu_ids: 0
-#seed: 1
-#ft: false
-#no_val: false

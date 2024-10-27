@@ -83,13 +83,13 @@ def display_color_legend(color_map, class_dict):
 # Streamlit App
 def main():
     # Load configuration
-    checkpoint_path = "./checkpoints/deeplab_resnet50_lr_0.001_batch_4_2/checkpoint_best.pth.tar"  # Update this path as needed
+    checkpoint_path = "./checkpoints/deeplab_resnet50_lr_0.001_batch_4_2/model_best.pth.tar"  # Update this path as needed
 
     # Load the model
     model, device = load_model(checkpoint_path)
 
     # Streamlit interface
-    st.title("Image Segmentation App")
+    st.title("Human Body Segmentation App")
     st.write("Upload an image to see the segmentation results for each level.")
 
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
