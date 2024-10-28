@@ -12,6 +12,7 @@ This project implements a hierarchical semantic segmentation pipeline using a cu
 - [Project Structure](#project-structure)
 - [Dataset Exploration](#dataset-exploration)
 - [Human Body Class Hierarchy](#human-body-class-hierarchy)
+- [Future Improvements](#future-improvements)
 
 ## Overview
 
@@ -143,3 +144,9 @@ The model segments the human body at different levels of detail using a hierarch
   - (4) Head
   - (5) Up Leg
   - (6) Up Hand
+
+## Future Improvements
+- **Alternative Architectures:** Exploring and experimentig with additional architectures.
+- **Different Loss function:** Try Focal Loss, research for different approaches to use information of class hierarchy.
+- **Advanced Augmentation:** In addition to random crop and scale, color jittering, random rotation try some different techniques like elastic deformations, random occlusion.
+- **Post-Processing:** Research for better post-processing techniques, which could refine segmentation boundaries and improve metrics.
