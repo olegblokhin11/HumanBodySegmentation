@@ -106,12 +106,13 @@ segmentation-project/
 │   └── hierarchical_deeplabv3.py  # Model architecture
 │
 ├── utils/
+|   ├── custom_transforms.py     # Custom transforms function
 │   ├── data_utils.py            # Data preprocessing and utilities
 │   ├── dataset.py               # Dataset initialization
 │   ├── lr_scheduler.py          # Learning rate scheduler
 │   ├── metrics.py               # Evaluation metrics
 │   ├── saver.py                 # Model checkpointing
-│   ├── tensorboard_summary.py   # Tensorboard utilities
+│   └── tensorboard_summary.py   # Tensorboard utilities
 │
 ├── train.py                     # Script for training the model
 ├── evaluate.py                  # Script for evaluating the model
