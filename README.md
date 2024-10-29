@@ -30,14 +30,6 @@ git clone https://github.com/olegblokhin11/HumanBodySegmentation.git
 cd human-body-segmentation
 pip install -r requirements.txt
 ```
-
-### Install Dependencies
-The project requires specific versions of packages listed in the requirements.txt file. Install these dependencies using:
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Usage
 ### Training
 To train the segmentation model, use the `train.py` script. Make sure to set up the appropriate configuration file (`.yml`) before starting the training.
