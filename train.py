@@ -85,7 +85,10 @@ class Trainer:
         )
         self.model.to(self.device)
 
-        # TODO: add load weights
+        # The backbone is initialised from COCO-pretrained weights, and training
+        # always starts from there. Resuming an interrupted run (restoring model,
+        # optimizer and epoch from a checkpoint) is not implemented yet; see
+        # "Future improvements" in the README.
 
     def _initialize_optimizer(self):
         """
@@ -103,7 +106,9 @@ class Trainer:
         Initialize the loss function (CrossEntropyLoss) and segmentation metrics.
         """
 
-        # TODO: check Focal Loss
+        # Cross-entropy over each level, averaged. A focal variant is sketched in
+        # the configs (training.loss_type), but only plain cross-entropy is
+        # implemented; see "Future improvements" in the README.
 
         self.criterion = torch.nn.CrossEntropyLoss().to(self.device)
         self.metrics = SegmentationMetrics()

@@ -383,6 +383,9 @@ them, and the expected directory layout, are documented above.
   scale / colour / rotation / flip pipeline.
 - **Per-class reasoning.** The per-class table shows the reported average hides a 0.46–0.87
   spread; class-balanced sampling or loss weighting is worth trying on the limb classes.
+- **Resume training.** Checkpoints are written but never restored, so an interrupted run has to
+  start over. Restoring model, optimizer, scheduler and epoch is a small, self-contained change
+  and the most practically useful item on this list.
 - **Serving and export.** TorchScript / ONNX export of the shared-backbone model, which is a
   natural fit for deployment.
 
