@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Datasets and model weights (download separately, see README)
+data/*
+!data/.gitkeep
+checkpoints/*
+!checkpoints/.gitkeep
+*.pth
+*.pth.tar
+
+# Training artifacts
+tensorboard/*
+!tensorboard/.gitkeep
+runs/
+
+# Tooling / OS
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.idea/
+.vscode/
