@@ -15,7 +15,8 @@ class HierarchicalDeepLabV3(nn.Module):
     """
     A hierarchical DeepLabV3 model for multi-level semantic segmentation.
 
-    This model generates segmentation masks at three different hierarchical levels using a shared backbone.
+    This model generates segmentation masks at three different hierarchical levels using a shared
+    backbone.
     """
 
     def __init__(
@@ -24,6 +25,7 @@ class HierarchicalDeepLabV3(nn.Module):
         num_classes_level_1: int,
         num_classes_level_2: int,
         backbone: str = "resnet50",
+        pretrained: bool = True,
     ) -> None:
         """
         Initialize the HierarchicalDeepLabV3 model.
@@ -32,9 +34,13 @@ class HierarchicalDeepLabV3(nn.Module):
             num_classes_level_0 (int): Number of classes for level 0 segmentation.
             num_classes_level_1 (int): Number of classes for level 1 segmentation.
             num_classes_level_2 (int): Number of classes for level 2 segmentation.
-            backbone (str): The backbone architecture to use ('resnet50', 'resnet101', 'mobilenet'). Default is 'resnet50'.
+            backbone (str): The backbone architecture to use ('resnet50', 'resnet101', 'mobilenet').
+            Default is 'resnet50'.
+            pretrained (bool): Whether to initialize the backbone with COCO-pretrained weights.
+                Set to False when the weights are about to be overwritten by a checkpoint,
+                which avoids an unnecessary download. Default is True.
         """
-        super(HierarchicalDeepLabV3, self).__init__()
+        super().__init__()
 
         # Validate the selected backbone
         assert backbone in [
@@ -43,18 +49,23 @@ class HierarchicalDeepLabV3(nn.Module):
             "mobilenet",
         ], "Invalid backbone name"
 
-        # Initialize the base model based on the selected backbone
+        # Initialize the base model based on the selected backbone.
+        #
+        # aux_loss is passed explicitly (torchvision would otherwise enable it only
+        # when pretrained weights are requested). The auxiliary classifier is never
+        # used by forward(), but it is part of the module structure, so keeping it
+        # enabled in every configuration lets a checkpoint trained with pretrained
+        # weights load into a model built with pretrained=False.
         if backbone == "resnet50":
-            self.base_model = deeplabv3_resnet50(
-                weights=DeepLabV3_ResNet50_Weights.DEFAULT, progress=True
-            )
+            weights = DeepLabV3_ResNet50_Weights.DEFAULT if pretrained else None
+            self.base_model = deeplabv3_resnet50(weights=weights, progress=True, aux_loss=True)
         elif backbone == "resnet101":
-            self.base_model = deeplabv3_resnet101(
-                weights=DeepLabV3_ResNet101_Weights.DEFAULT, progress=True
-            )
+            weights = DeepLabV3_ResNet101_Weights.DEFAULT if pretrained else None
+            self.base_model = deeplabv3_resnet101(weights=weights, progress=True, aux_loss=True)
         elif backbone == "mobilenet":
+            weights = DeepLabV3_MobileNet_V3_Large_Weights.DEFAULT if pretrained else None
             self.base_model = deeplabv3_mobilenet_v3_large(
-                weights=DeepLabV3_MobileNet_V3_Large_Weights.DEFAULT, progress=True
+                weights=weights, progress=True, aux_loss=True
             )
 
         # Remove the last classifier layer from the base model

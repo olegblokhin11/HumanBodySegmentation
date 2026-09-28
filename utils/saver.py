@@ -2,7 +2,6 @@ import os
 import shutil
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict
 
 import torch
 
@@ -14,10 +13,11 @@ class Saver:
 
     Attributes:
         config (Dict): The configuration dictionary for training parameters.
-        checkpoint_dir (str): Directory path where checkpoints for the current experiment will be saved.
+        checkpoint_dir (str): Directory path where checkpoints for the current experiment will be
+        saved.
     """
 
-    def __init__(self, config: Dict, experiment_name: str = None) -> None:
+    def __init__(self, config: dict, experiment_name: str = None) -> None:
         """
         Initialize the Saver with a specified configuration and experiment name.
 
@@ -58,13 +58,14 @@ class Saver:
         return checkpoint_dir
 
     def save_checkpoint(
-        self, state: Dict, is_best: bool, filename: str = "checkpoint.pth.tar"
+        self, state: dict, is_best: bool, filename: str = "checkpoint.pth.tar"
     ) -> None:
         """
         Saves a checkpoint to disk.
 
         Args:
-            state (Dict): A dictionary containing the model state, optimizer state, epoch number, etc.
+            state (Dict): A dictionary containing the model state, optimizer state, epoch number,
+            etc.
             is_best (bool): Boolean flag indicating if this is the best-performing checkpoint.
             filename (str): The filename for the checkpoint.
         """
@@ -116,9 +117,7 @@ class Saver:
             config_params["momentum"] = self.config["training"]["momentum"]
             config_params["weight_decay"] = self.config["training"]["weight_decay"]
             config_params["val_interval"] = self.config["training"]["val_interval"]
-            config_params["tensorboard_log_dir"] = self.config["training"][
-                "tensorboard"
-            ]["log_dir"]
+            config_params["tensorboard_log_dir"] = self.config["training"]["tensorboard"]["log_dir"]
 
             # Optional Attributes (Commented out fields or optional attributes)
             if "weights_initialization" in self.config["training"]:

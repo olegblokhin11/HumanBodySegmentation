@@ -1,5 +1,4 @@
 import os
-from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -20,12 +19,13 @@ class PascalPartDataset(Dataset):
     of class hierarchy.
     """
 
-    def __init__(self, config: Dict, mode: str = "train") -> None:
+    def __init__(self, config: dict, mode: str = "train") -> None:
         """
         Initialize the PascalPartDataset with configurations and mode.
 
         Args:
-            config (Dict): Configuration dictionary containing dataset paths and image processing settings.
+            config (Dict): Configuration dictionary containing dataset paths and image processing
+            settings.
             mode (str): The mode for the dataset, either 'train' or 'val'. Default is 'train'.
         """
         assert mode in ["train", "val"], "Invalid mode. Use 'train' or 'val'."
@@ -59,9 +59,7 @@ class PascalPartDataset(Dataset):
         )
 
         samples_list_name = "train_id.txt" if mode == "train" else "val_id.txt"
-        samples_list = os.path.join(
-            config["dataset"]["dataset_path"], samples_list_name
-        )
+        samples_list = os.path.join(config["dataset"]["dataset_path"], samples_list_name)
 
         self.image_paths, self.mask_paths = self.load_image_and_mask_paths(samples_list)
 
@@ -74,7 +72,7 @@ class PascalPartDataset(Dataset):
         """
         return len(self.image_paths)
 
-    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         """
         Get an image and its corresponding segmentation masks by index.
 
@@ -82,7 +80,8 @@ class PascalPartDataset(Dataset):
             idx (int): Index of the sample.
 
         Returns:
-            Dict[str, torch.Tensor]: A dictionary containing the processed image and three levels of segmentation masks.
+            Dict[str, torch.Tensor]: A dictionary containing the processed image and three levels of
+            segmentation masks.
         """
         image, mask = self.make_image_and_mask_pair(idx)
         image, mask = self.transforms(image, mask)
@@ -105,7 +104,7 @@ class PascalPartDataset(Dataset):
             "mask_level_2": mask_level_2,
         }
 
-    def make_image_and_mask_pair(self, index: int) -> Tuple[Image.Image, Image.Image]:
+    def make_image_and_mask_pair(self, index: int) -> tuple[Image.Image, Image.Image]:
         """
         Read an image and its corresponding segmentation mask from disk.
 
@@ -120,7 +119,7 @@ class PascalPartDataset(Dataset):
         mask = Image.fromarray(mask.astype(np.uint8))
         return image, mask
 
-    def load_image_and_mask_paths(self, file_path: str) -> Tuple[List[str], List[str]]:
+    def load_image_and_mask_paths(self, file_path: str) -> tuple[list[str], list[str]]:
         """
         Load the paths for images and masks based on a sample list.
 
@@ -130,20 +129,16 @@ class PascalPartDataset(Dataset):
         Returns:
             Tuple[List[str], List[str]]: Lists of image and mask file paths.
         """
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             image_names = [line.strip() for line in f.readlines()]
-        image_paths = [
-            os.path.join(self.image_dir, name + ".jpg") for name in image_names
-        ]
-        mask_paths = [
-            os.path.join(self.mask_dir, name + ".npy") for name in image_names
-        ]
+        image_paths = [os.path.join(self.image_dir, name + ".jpg") for name in image_names]
+        mask_paths = [os.path.join(self.mask_dir, name + ".npy") for name in image_names]
         return image_paths, mask_paths
 
     @staticmethod
     def get_transform(
         mode: str = "train",
-        scale_factor: Tuple[float, float] = (0.5, 2.0),
+        scale_factor: tuple[float, float] = (0.5, 2.0),
         base_size: int = 512,
         crop_size: int = 512,
         brightness: float = 0.3,
@@ -157,7 +152,8 @@ class PascalPartDataset(Dataset):
 
         Args:
             mode (str): The mode for the dataset, either 'train' or 'val'.
-            scale_factor (Tuple[float, float]): Scale factor for random scaling image (min_coef, max_coef).
+            scale_factor (Tuple[float, float]): Scale factor for random scaling image (min_coef,
+            max_coef).
             base_size (int): Base size for image resizing.
             crop_size (int): Crop size for image cropping.
 
@@ -200,7 +196,7 @@ class PascalPartDataset(Dataset):
     @staticmethod
     def preprocess(
         image: Image.Image, mask: Image.Image, crop_size: int = 512
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Preprocess an image and mask with a fixed transformation pipeline.
 
@@ -223,12 +219,13 @@ class PascalPartDataset(Dataset):
         return preprocess_transforms(image, mask)
 
 
-def initialize_data_loader(config: Dict) -> Tuple[DataLoader, DataLoader]:
+def initialize_data_loader(config: dict) -> tuple[DataLoader, DataLoader]:
     """
     Initialize data loaders for training and validation datasets.
 
     Args:
-        config (Dict): Configuration dictionary containing dataset paths and image processing settings.
+        config (Dict): Configuration dictionary containing dataset paths and image processing
+        settings.
 
     Returns:
         Tuple[DataLoader, DataLoader]: Training and validation data loaders.
@@ -256,7 +253,7 @@ def initialize_data_loader(config: Dict) -> Tuple[DataLoader, DataLoader]:
     return train_loader, val_loader
 
 
-def collate_fn(batch: List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
+def collate_fn(batch: list[dict[str, torch.Tensor]]) -> dict[str, torch.Tensor]:
     """
     Custom collate function to handle batched data for the DataLoader.
 

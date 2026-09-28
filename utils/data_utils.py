@@ -1,10 +1,8 @@
-from typing import Dict, List
-
 import numpy as np
 import torch
 
 # Semantic segmentation hierarchy dictionary
-hierarchy: Dict[int, str] = {
+hierarchy: dict[int, str] = {
     0: "background",
     1: "low_hand",
     2: "torso",
@@ -14,29 +12,27 @@ hierarchy: Dict[int, str] = {
     6: "up_hand",
 }
 
-hierarchy_level_0: Dict[int, str] = {0: "background", 1: "body"}
+hierarchy_level_0: dict[int, str] = {0: "background", 1: "body"}
 
-hierarchy_level_1: Dict[int, str] = {0: "background", 1: "upper_body", 2: "lower_body"}
+hierarchy_level_1: dict[int, str] = {0: "background", 1: "upper_body", 2: "lower_body"}
 
 # Hierarchy labels mapping
-level_0: Dict[int, int] = {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1}
-level_1: Dict[int, int] = {0: 0, 1: 1, 2: 1, 4: 1, 6: 1, 3: 2, 5: 2}
-level_2: Dict[int, int] = {k: k for k in hierarchy.keys()}
+level_0: dict[int, int] = {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1}
+level_1: dict[int, int] = {0: 0, 1: 1, 2: 1, 4: 1, 6: 1, 3: 2, 5: 2}
+level_2: dict[int, int] = {k: k for k in hierarchy.keys()}
 
 # Number of classes at each hierarchical level
-level_to_num_classes: Dict[int, int] = {0: 2, 1: 3, 2: 7}
+level_to_num_classes: dict[int, int] = {0: 2, 1: 3, 2: 7}
 
 # Mapping from level string to index
-level_str_to_level_idx: Dict[str, int] = {
+level_str_to_level_idx: dict[str, int] = {
     "mask_level_0": 0,
     "mask_level_1": 1,
     "mask_level_2": 2,
 }
 
 
-def decode_segmap_sequence(
-    label_masks: List[np.ndarray], n_classes: int
-) -> torch.Tensor:
+def decode_segmap_sequence(label_masks: list[np.ndarray], n_classes: int) -> torch.Tensor:
     """
     Decode a sequence of segmentation masks into RGB format.
 
@@ -45,7 +41,8 @@ def decode_segmap_sequence(
         n_classes (int): Number of classes.
 
     Returns:
-        torch.Tensor: RGB tensor of shape (B, C, H, W) where B is batch size, C is number of channels.
+        torch.Tensor: RGB tensor of shape (B, C, H, W) where B is batch size, C is number of
+        channels.
     """
     rgb_masks = [decode_segmap(label_mask, n_classes) for label_mask in label_masks]
     rgb_masks = torch.from_numpy(np.array(rgb_masks).transpose([0, 3, 1, 2]))

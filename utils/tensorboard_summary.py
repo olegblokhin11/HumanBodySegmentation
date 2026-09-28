@@ -89,9 +89,7 @@ class TensorboardSummary:
         combined_grid = torch.cat((grid_input, grid_gt, grid_pred), dim=1)
 
         # Write a single image grid to TensorBoard
-        writer.add_image(
-            "Visualization (Image / Gt / Pred)", combined_grid, global_step
-        )
+        writer.add_image("Visualization (Image / Gt / Pred)", combined_grid, global_step)
 
     def _get_unique_dir_name(self, base_dir: str, experiment_name: str) -> str:
         """

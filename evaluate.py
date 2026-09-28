@@ -1,14 +1,22 @@
 import os
 
 import torch
-import yaml
 from tqdm import tqdm
 
 from models.hierarchical_deeplabv3 import HierarchicalDeepLabV3
-from train import get_device
-from utils.data_utils import level_str_to_level_idx, level_to_num_classes
+from utils.cli import add_checkpoint_arg, build_parser, load_config, resolve_checkpoint
+from utils.data_utils import (
+    hierarchy,
+    hierarchy_level_0,
+    hierarchy_level_1,
+    level_str_to_level_idx,
+    level_to_num_classes,
+)
 from utils.dataset import initialize_data_loader
+from utils.device import get_device
 from utils.metrics import SegmentationMetrics
+
+LEVEL_NAMES = {0: hierarchy_level_0, 1: hierarchy_level_1, 2: hierarchy}
 
 
 class Tester:
@@ -54,12 +62,16 @@ class Tester:
             num_classes_level_1=level_to_num_classes[1],
             num_classes_level_2=level_to_num_classes[2],
             backbone=self.config["network"]["backbone"],
+            # Weights come from the checkpoint, so skip downloading pretrained ones.
+            pretrained=False,
         )
         model.to(self.device)
 
         if os.path.isfile(checkpoint_path):
             print(f"Loading checkpoint from '{checkpoint_path}'")
-            checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            # weights_only=False is required: checkpoints carry optimizer state and
+            # non-tensor metadata on top of the model weights.
+            checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
             model.load_state_dict(checkpoint["state_dict"])
             print(f"Successfully loaded checkpoint '{checkpoint_path}'")
         else:
@@ -88,7 +100,7 @@ class Tester:
 
         tbar = tqdm(self.val_loader, desc="\r")
         with torch.no_grad():
-            for i, samples in enumerate(tbar):
+            for _i, samples in enumerate(tbar):
                 images = samples["image"].to(self.device)
                 masks = {
                     level: samples[level].to(self.device)
@@ -96,9 +108,9 @@ class Tester:
                 }
 
                 outputs = self.model(images)
-                loss = sum(
-                    [criterion(outputs[level], masks[level]) for level in masks]
-                ) / len(masks)
+                loss = sum([criterion(outputs[level], masks[level]) for level in masks]) / len(
+                    masks
+                )
                 test_loss += loss.item()
 
                 # Add batch sample into metrics
@@ -115,28 +127,44 @@ class Tester:
             miou = self.metrics.mean_intersection_over_union(level_idx=level_idx)
 
             print(
-                f"Level [{level_idx}] - Acc: {acc:.3f}, Acc_class: {acc_class:.3f}, mIoU: {miou:.3f}"
+                f"Level [{level_idx}] - Acc: {acc:.3f}, "
+                f"Acc_class: {acc_class:.3f}, mIoU: {miou:.3f}"
             )
             avg_miou_over_level += miou
 
         print(f"Average Loss: {test_loss / len(self.val_loader):.3f}")
-        print(
-            f"Average mIoU across all levels: {avg_miou_over_level / self.num_mask_levels:.3f}"
-        )
+        print(f"Average mIoU across all levels: {avg_miou_over_level / self.num_mask_levels:.3f}")
+
+        self.print_per_class_iou()
+
+    def print_per_class_iou(self) -> None:
+        """
+        Print the IoU of every individual class, grouped by hierarchy level.
+
+        Background (class 0) is omitted, matching the metric definition in the task.
+        """
+        print("\nPer-class IoU (background excluded):")
+        for level_idx in range(self.num_mask_levels):
+            level_names = LEVEL_NAMES[level_idx]
+            iou_per_class = self.metrics.intersection_over_union_per_class(level_idx=level_idx)
+
+            print(f"  Level [{level_idx}]:")
+            for offset, iou in enumerate(iou_per_class):
+                class_idx = offset + 1
+                class_name = level_names.get(class_idx, f"class_{class_idx}")
+                print(f"    {class_name:<12} {iou:.3f}")
 
 
 def main():
     """
     Main function to start the evaluation process.
     """
-    # TODO: write parsing from args
+    parser = add_checkpoint_arg(build_parser("Evaluate a trained hierarchical segmentation model."))
+    args = parser.parse_args()
 
-    config_path = "./configs/baseline_heavy.yml"
-    checkpoint_path = "./checkpoints/deeplab_resnet50_lr_0.001_batch_4_2/checkpoint_best.pth.tar"  # Update this path as needed
-
-    # Load configuration
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
+    config = load_config(args.config)
+    checkpoint_path = resolve_checkpoint(config, args.checkpoint)
+    print(f"Evaluating checkpoint: {checkpoint_path}")
 
     tester = Tester(config, checkpoint_path)
     tester.run_evaluation()

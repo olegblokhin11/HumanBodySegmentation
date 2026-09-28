@@ -1,5 +1,4 @@
 import random
-from typing import Tuple
 
 import numpy as np
 import torch
@@ -12,9 +11,7 @@ class RandomHorizontalFlip:
     Randomly flip the image and mask horizontally with a probability of 0.5.
     """
 
-    def __call__(
-        self, image: Image.Image, mask: Image.Image
-    ) -> Tuple[Image.Image, Image.Image]:
+    def __call__(self, image: Image.Image, mask: Image.Image) -> tuple[Image.Image, Image.Image]:
         """
         Flip the image and mask horizontally with a probability of 0.5.
 
@@ -39,7 +36,7 @@ class RandomScaleCrop:
 
     def __init__(
         self,
-        scale_factor: Tuple[float, float],
+        scale_factor: tuple[float, float],
         base_size: int,
         crop_size: int,
         fill: int = 0,
@@ -48,7 +45,8 @@ class RandomScaleCrop:
         Initialize RandomScaleCrop.
 
         Args:
-            scale_factor (Tuple[float, float]): Scale factor for random scaling (min_coef, max_coef).
+            scale_factor (Tuple[float, float]): Scale factor for random scaling (min_coef,
+            max_coef).
             base_size (int): Base size for random scaling.
             crop_size (int): Target size for cropping.
             fill (int): Fill value for padding the mask (default: 0).
@@ -58,9 +56,7 @@ class RandomScaleCrop:
         self.crop_size = crop_size
         self.fill = fill
 
-    def __call__(
-        self, image: Image.Image, mask: Image.Image
-    ) -> Tuple[Image.Image, Image.Image]:
+    def __call__(self, image: Image.Image, mask: Image.Image) -> tuple[Image.Image, Image.Image]:
         """
         Apply random scaling and cropping to the image and mask.
 
@@ -118,9 +114,7 @@ class FixScaleCrop:
         """
         self.crop_size = crop_size
 
-    def __call__(
-        self, image: Image.Image, mask: Image.Image
-    ) -> Tuple[Image.Image, Image.Image]:
+    def __call__(self, image: Image.Image, mask: Image.Image) -> tuple[Image.Image, Image.Image]:
         """
         Apply fixed scaling and center cropping to the image and mask.
 
@@ -154,7 +148,8 @@ class FixScaleCrop:
 
 class ColorJitter:
     """
-    Randomly change the brightness, contrast, saturation, and hue of an image, while leaving the mask unchanged.
+    Randomly change the brightness, contrast, saturation, and hue of an image, while leaving the
+    mask unchanged.
     """
 
     def __init__(
@@ -169,20 +164,21 @@ class ColorJitter:
 
         Args:
             brightness (float): How much to jitter brightness.
-                                brightness_factor is chosen uniformly from [max(0, 1 - brightness), 1 + brightness].
+                                brightness_factor is chosen uniformly from [max(0, 1 - brightness),
+                                1 + brightness].
             contrast (float): How much to jitter contrast.
-                              contrast_factor is chosen uniformly from [max(0, 1 - contrast), 1 + contrast].
+                              contrast_factor is chosen uniformly from [max(0, 1 - contrast), 1 +
+                              contrast].
             saturation (float): How much to jitter saturation.
-                                saturation_factor is chosen uniformly from [max(0, 1 - saturation), 1 + saturation].
+                                saturation_factor is chosen uniformly from [max(0, 1 - saturation),
+                                1 + saturation].
             hue (float): How much to jitter hue. hue_factor is chosen uniformly from [-hue, hue].
         """
         self.color_jitter = v2.ColorJitter(
             brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
         )
 
-    def __call__(
-        self, image: Image.Image, mask: Image.Image
-    ) -> Tuple[Image.Image, Image.Image]:
+    def __call__(self, image: Image.Image, mask: Image.Image) -> tuple[Image.Image, Image.Image]:
         """
         Apply color jitter to the image and return both the transformed image and the original mask.
 
@@ -213,9 +209,7 @@ class RandomRotation:
         """
         self.degrees = degrees
 
-    def __call__(
-        self, image: Image.Image, mask: Image.Image
-    ) -> Tuple[Image.Image, Image.Image]:
+    def __call__(self, image: Image.Image, mask: Image.Image) -> tuple[Image.Image, Image.Image]:
         """
         Apply random rotation to the image and mask.
 
@@ -239,8 +233,8 @@ class Normalize:
 
     def __init__(
         self,
-        mean: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-        std: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+        mean: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        std: tuple[float, float, float] = (1.0, 1.0, 1.0),
     ) -> None:
         """
         Initialize Normalize.
@@ -252,9 +246,7 @@ class Normalize:
         self.mean = mean
         self.std = std
 
-    def __call__(
-        self, image: Image.Image, mask: Image.Image
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def __call__(self, image: Image.Image, mask: Image.Image) -> tuple[np.ndarray, np.ndarray]:
         """
         Normalize the image with mean and standard deviation.
 
@@ -278,9 +270,7 @@ class ToTensor:
     Convert PIL images or numpy arrays in the sample to Tensors.
     """
 
-    def __call__(
-        self, image: np.ndarray, mask: np.ndarray
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __call__(self, image: np.ndarray, mask: np.ndarray) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Convert image and mask to tensor format.
 

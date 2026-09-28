@@ -1,30 +1,15 @@
 import torch
-import yaml
 from tqdm import tqdm
 
 from models.hierarchical_deeplabv3 import HierarchicalDeepLabV3
+from utils.cli import build_parser, load_config
 from utils.data_utils import level_str_to_level_idx, level_to_num_classes
 from utils.dataset import initialize_data_loader
+from utils.device import get_device
 from utils.lr_scheduler import get_lr_scheduler
 from utils.metrics import SegmentationMetrics
 from utils.saver import Saver
 from utils.tensorboard_summary import TensorboardSummary
-
-
-def get_device():
-    """
-    Determine the appropriate device for training (GPU, MPS, or CPU).
-
-    Returns:
-        str: The device to be used for training ('cuda', 'mps', or 'cpu').
-    """
-    device = (
-        "cuda"
-        if torch.cuda.is_available()
-        else "mps" if torch.backends.mps.is_available() else "cpu"
-    )
-    print(f"Using {device} device")
-    return device
 
 
 class Trainer:
@@ -72,12 +57,14 @@ class Trainer:
         Set up the experiment environment, including directories for saving
         model checkpoints and TensorBoard summaries.
         """
-        experiment_name = f"deeplab_{self.config['network']['backbone']}_lr_{self.config['training']['lr']}_batch_{self.config['training']['batch_size']}"
+        experiment_name = (
+            f"deeplab_{self.config['network']['backbone']}"
+            f"_lr_{self.config['training']['lr']}"
+            f"_batch_{self.config['training']['batch_size']}"
+        )
         self.saver = Saver(self.config, experiment_name)
         self.saver.save_experiment_config()
-        self.summary = TensorboardSummary(
-            self.config["training"]["tensorboard"]["log_dir"]
-        )
+        self.summary = TensorboardSummary(self.config["training"]["tensorboard"]["log_dir"])
         self.writer = self.summary.create_summary(experiment_name)
 
     def _initialize_dataloaders(self):
@@ -126,9 +113,7 @@ class Trainer:
         Initialize the learning rate scheduler based on the training configuration.
         """
         self.num_iters_per_epoch = len(self.train_loader)
-        self.scheduler = get_lr_scheduler(
-            self.config, self.num_iters_per_epoch, self.optimizer
-        )
+        self.scheduler = get_lr_scheduler(self.config, self.num_iters_per_epoch, self.optimizer)
 
     def _get_num_levels(self):
         """
@@ -155,7 +140,8 @@ class Trainer:
         # Print the current learning rate and best_pred
         current_lr = self._get_current_lr()
         print(
-            f"[Epoch {epoch}] Learning Rate: {current_lr:.3e}, Best Prediction (mIoU): {self.best_pred:.4f}"
+            f"[Epoch {epoch}] Learning Rate: {current_lr:.3e}, "
+            f"Best Prediction (mIoU): {self.best_pred:.4f}"
         )
 
         train_loss = 0.0
@@ -172,24 +158,18 @@ class Trainer:
             self.optimizer.zero_grad()
             outputs = self.model(images)
 
-            loss = sum(
-                [self.criterion(outputs[level], masks[level]) for level in masks]
-            )
+            loss = sum([self.criterion(outputs[level], masks[level]) for level in masks])
             loss /= self.batch_size
 
             loss.backward()
             self.optimizer.step()
             train_loss += loss.item()
             tbar.set_description(f"Train loss: {train_loss / (i + 1):.3f}")
-            self.writer.add_scalar(
-                "train/total_loss_iter", loss.item(), epoch * len(tbar) + i
-            )
+            self.writer.add_scalar("train/total_loss_iter", loss.item(), epoch * len(tbar) + i)
 
             # Log the current learning rate
             current_lr = self._get_current_lr()
-            self.writer.add_scalar(
-                "train/learning_rate", current_lr, epoch * len(tbar) + i
-            )
+            self.writer.add_scalar("train/learning_rate", current_lr, epoch * len(tbar) + i)
 
             if i % (self.num_iters_per_epoch // 10) == 0:
                 global_step = i + self.num_iters_per_epoch * epoch
@@ -241,12 +221,7 @@ class Trainer:
                 }
                 outputs = self.model(images)
                 loss = (
-                    sum(
-                        [
-                            self.criterion(outputs[level], masks[level])
-                            for level in masks
-                        ]
-                    )
+                    sum([self.criterion(outputs[level], masks[level]) for level in masks])
                     / self.batch_size
                 )
                 test_loss += loss.item()
@@ -287,9 +262,7 @@ class Trainer:
             self.writer.add_scalar(f"val/Acc [{level_idx}]", acc, epoch)
             self.writer.add_scalar(f"val/Acc_class [{level_idx}]", acc_class, epoch)
 
-            print(
-                f"Level [{level_idx}] Acc: {acc}, Acc_class: {acc_class}, mIoU: {miou}"
-            )
+            print(f"Level [{level_idx}] Acc: {acc}, Acc_class: {acc_class}, mIoU: {miou}")
             avg_miou_over_level += miou
 
         # Save the best model based on average mIoU
@@ -314,10 +287,10 @@ def main():
     The main function to start the training process, including loading configurations,
     initializing the trainer, and managing the training loop.
     """
-    # TODO: write parsing from args
+    parser = build_parser("Train the hierarchical segmentation model.")
+    args = parser.parse_args()
 
-    with open("./configs/baseline_heavy.yml") as f:
-        config = yaml.safe_load(f)
+    config = load_config(args.config)
 
     trainer = Trainer(config)
     for epoch in range(config["training"]["start_epoch"], config["training"]["epochs"]):
