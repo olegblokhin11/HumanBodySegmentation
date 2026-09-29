@@ -1,0 +1,7 @@
+# Everything needed to run the application plus the development tooling.
+# Install this instead of requirements.txt when running the test suite or the linters:
+#     pip install -r requirements-dev.txt
+-r requirements.txt
+
+pytest==9.1.1
+ruff==0.16.9

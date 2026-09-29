@@ -32,6 +32,7 @@ Samples are picked so the person actually fills the frame — see
   - [2. Get the data](#2-get-the-data)
   - [3. Get the checkpoint](#3-get-the-checkpoint)
 - [Reproducing the results](#reproducing-the-results)
+- [Tests](#tests)
 - [Interactive demo](#interactive-demo)
 - [Method](#method)
   - [Class hierarchy](#class-hierarchy)
@@ -59,6 +60,7 @@ The repository contains:
   and IoU per individual class.
 - **`app.py`** — a Streamlit app for uploading an image and inspecting all three levels.
 - **`scripts/visualize_predictions.py`** — renders the qualitative grid used in this README.
+- **`tests/`** — pytest suite for the metrics and the model's output shapes.
 
 ## Results
 
@@ -205,6 +207,31 @@ To regenerate the qualitative figure:
 python scripts/visualize_predictions.py --num-samples 3 --output docs/fig_predictions.png
 ```
 
+## Tests
+
+The test suite covers the two pieces that are easy to get quietly wrong: the metrics and the
+model's output shapes. It runs on CPU with randomly initialised weights, so it needs neither the
+dataset nor a GPU.
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+All 18 tests pass in a few seconds on CPU.
+
+`tests/test_metrics.py` pins the metric definitions with hand-computed confusion matrices —
+including that a class absent from the split scores 0 rather than `NaN`, and that class accuracy
+(a recall) is deliberately not the same number as IoU. `tests/test_model.py` checks that all three
+heads return logits at the input resolution, that a non-square input is not transposed on the way
+back up, that an unknown backbone fails loudly, and that the auxiliary classifier exists even with
+`pretrained=False` (checkpoints trained with pretrained weights contain its parameters, so this is
+what lets them load). `tests/test_imports.py` imports the three entry points, which no unit test
+would otherwise touch.
+
+CI runs this suite plus `ruff check` and `ruff format --check` on every push and pull request to
+`main` — see [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
 ## Interactive demo
 
 ```bash
@@ -320,11 +347,17 @@ HumanBodySegmentation/
 │   └── tensorboard_summary.py      # TensorBoard writers and mask visualisation
 ├── scripts/
 │   └── visualize_predictions.py    # qualitative comparison figure
+├── tests/
+│   ├── test_imports.py             # the entry points import cleanly
+│   ├── test_metrics.py             # metric definitions on hand-computed confusion matrices
+│   └── test_model.py               # output shapes and model construction
 ├── docs/                           # figures used in this README
 ├── train.py                        # training entry point
 ├── evaluate.py                     # evaluation entry point
 ├── app.py                          # Streamlit demo
 ├── requirements.txt
+├── requirements-dev.txt            # + pytest and ruff
+├── pytest.ini
 ├── ruff.toml                       # lint and format configuration (used by CI)
 └── LICENSE
 ```
